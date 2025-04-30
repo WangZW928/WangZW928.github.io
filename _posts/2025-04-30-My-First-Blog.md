@@ -4,15 +4,15 @@ title: Firt blog about me
 mathjax: true
 ---
 
-This is my first blog, I'd like to do a brief introducation for me.
+This is my first blog, and I'd like to briefly introduce myself.
 
-I got a Master degree in Fluid Mechanics from CAS (Chinese Acedmy of Sciences) in 2024, where I focused on Renewable Energy Computation and Turbulence, which is a unforgetable time for my life.
-Later, I toke into a Phd project of another University in a few time which is about therotical fluid, but actually it's just for paper-writing although I'm clear I know nothing about that subject.
-Soon, I realized Appied Scientist is my persional dream, but this project has no helf for me even waste time, so I quit.
-Now I'm worked as a Algorithm Engineer about Mathematics package, I hope it's a good chance for me to learn knowledge and establish my dream structle.
-In future, if I'm necessary for a Phd degree and there is a suit oppunturity, maybe I would try again.
+I obtained a Master's degree in Fluid Mechanics from CAS (Chinese Academy of Sciences) in 2024, where I focused on renewable energy computation and turbulence. It was an unforgettable period in my life.
+Later, I briefly joined a PhD program at another university, working on theoretical fluid mechanics. However, the project was mostly focused on paper-writing, and I clearly knew very little about the subject.
+Soon, I realized that becoming an applied scientist is my personal dream. Since the project offered no help toward that goal and was actually wasting my time, I decided to quit.
+Now, I work as an algorithm engineer in the field of mathematical software. I hope this is a great opportunity for me to gain knowledge and lay the foundation for my dream.
+In the future, if a PhD degree becomes necessary and the right opportunity arises, I might consider trying again.
 
-And then, I want to explain the reason that I make personal website.
+I also want to explain why I decided to create a personal website.
 
-Reason 1, I would share my work thought online. There is a mount of clear guys, if they are instrested, their feedback is helpful for me.
-Reason 2, I do like code fluid simulation program which is beautiful and amazing, but sometime i will be lazy. So recording my learning and coding online is good way to fix this.
+Reason 1: I want to share my thoughts and work online. There are many brilliant people out there, and if any of them are interested, their feedback could be very helpful to me.
+Reason 2: I truly enjoy coding fluid simulation programs—they are both beautiful and fascinating. However, I sometimes get lazy. Recording my learning and coding progress online is a good way to keep myself motivated.
