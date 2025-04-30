@@ -16,7 +16,7 @@ sharing: false
 Actually, CFD is a good way to simulate the fluid dynamics.
 But, the Navier-Stokes equation is not stable in complex cases with high cells number.
 Stable Fluid is a method to solve the Navier-Stokes equation in 2D used by semi-Largian-advection scheme in computer graphics, which is absolutely stable, althought it is not very accurate.
-See [Paper](https://kitian616.github.io/jekyll-TeXt-theme/samples.html#page-layout) for details.
+See [Paper](https://www.dgp.toronto.edu/public_user/stam/reality/Research/pdf/ns.pdf) for details.
 In this project, I this method is made by FDM in 2D.
 
 ##  Theory
@@ -24,7 +24,9 @@ In this project, I this method is made by FDM in 2D.
 The Navier-Stokes equation is a partial differential equation, which is a partial derivative of the velocity field, which as follows:
 
 $$ \nabla \cdot \vec{u} = 0 $$
+
 $$ \frac{\partial u}{\partial t} + \frac{\partial (u \cdot u)}{\partial x} + \frac{\partial (v \cdot u)}{\partial y} = -\frac{\partial p}{\partial x} + \nu \left( \frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial y^2} \right) $$
+
 $$ \frac{\partial v}{\partial t} + \frac{\partial (u \cdot v)}{\partial x} + \frac{\partial (v \cdot v)}{\partial y} = -\frac{\partial p}{\partial y} + \nu \left( \frac{\partial^2 v}{\partial x^2} + \frac{\partial^2 v}{\partial y^2} \right) $$
 
 The stable fluid method aimto split the equation into two parts, one for the velocity and the other for the pressure, which can ingore  the pressure effect on the velocity, which are follows:
@@ -37,7 +39,10 @@ Projection operator can do this:
 
 $$ u = P(w) = w - \nabla p $$
 
-which contains a relation : $$ P(u) = u, P(w) = u, P(w-u) = P(\nabla p) = 0 $$.
+which contains a relation : 
+
+$$ P(u) = u, P(w) = u, P(w-u) = P(\nabla p) = 0 $$.
+
 This is also means no divgence free part of Pressure Gradient.
 
 So, pressure should be solved first, as follows:
@@ -73,9 +78,13 @@ which is about diffusion iteration.
 ###  Force Iteration
 
 We cancel the Projection term from the equation to get the force iteration
+
 $$ \frac{u^{n}_1 - u^n}{ \delta t} = P (f) $$
+
 $$ \frac{w_1 - w_0}{ \delta t} = f $$
+
 $$ w_1 = w_0 + \delta t f $$
+
 where $u^n = P(w_0)$ is the previous pressure and $u^{n}_1 = P(w_1)$ is the current pressure.
 Then we get the force iteration:$w_1$
 
