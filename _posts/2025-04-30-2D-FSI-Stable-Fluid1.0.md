@@ -98,7 +98,7 @@ $$ u^{n}_2(x) =  u^n_1(p(x,-\delta t))$$
 
 ,where $p(x,-\delta t)$ is the position of the previous time step.
 
-Thus, we get the advection iteration:$w_2 = w^_1(p(x,-\delta t))$.
+Thus, we get the advection iteration:$$w_2 = w_1(p(x,-\delta t))$$.
 
 ### Diffusion Iteration
 
