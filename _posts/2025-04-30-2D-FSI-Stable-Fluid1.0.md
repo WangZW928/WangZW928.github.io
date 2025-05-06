@@ -1,6 +1,6 @@
 ---
 layout: article
-title: 2D FSI - Stable Fluid
+title: 2D FSI - Stable Fluid 1.0
 mathjax: true
 pageview: true
 show_subscribe: true
@@ -17,7 +17,7 @@ Actually, CFD is a good way to simulate the fluid dynamics.
 But, the Navier-Stokes equation is not stable in complex cases with high cells number.
 Stable Fluid is a method to solve the Navier-Stokes equation in 2D used by semi-Largian-advection scheme in computer graphics, which is absolutely stable, althought it is not very accurate.
 See [Paper](https://www.dgp.toronto.edu/public_user/stam/reality/Research/pdf/ns.pdf) for details.
-In this project, I this method is made by FDM in 2D.
+In this project, this method is implemented using finite difference methods (FDM) in 2D.
 
 ##  Theory
 
@@ -33,7 +33,7 @@ The stable fluid method aimto split the equation into two parts, one for the vel
 
 $$ w = u + \nabla p $$
 
-which means, any vector field can be decomposed into a divergence free part and a curl free part.
+According to Helmholtz–Hodge decomposition, any vector field can be uniquely decomposed into a divergence-free (solenoidal) component and a gradient field (curl-free) component.
 So, how to solve velocity field from any vector field? 
 Projection operator can do this:
 
@@ -86,7 +86,36 @@ $$ \frac{w_1 - w_0}{ \delta t} = f $$
 $$ w_1 = w_0 + \delta t f $$
 
 where $u^n = P(w_0)$ is the previous pressure and $u^{n}_1 = P(w_1)$ is the current pressure.
-Then we get the force iteration:$w_1$
+Then we get the force iteration:$w_1$.
 
 
+### Advection Iteration
 
+For advection iteration, smeils-Largian method is used, meaning we trace the velocity field backward in time (semi-Lagrangian advection),
+which is as follows:
+
+$$ u^{n}_2(x) =  u^n_1(p(x,-\delta t))$$
+
+,where $p(x,-\delta t)$ is the position of the previous time step.
+
+Thus, we get the advection iteration:$w_2 = w^_1(p(x,-\delta t))$.
+
+### Diffusion Iteration
+
+We cancel the Projection term from the equation to get the diffusion iteration:
+
+$$ w_3 = w_2 + \delta t \mu \nabla^2 w_2 $$
+
+, while, implict method is used to solve the diffusion iteration:
+
+$$ ( I - \delta t \mu \nabla^2)w_3 =  w_2 $$
+
+, this equation is solved as a sparse linear system, often with Conjugate Gradient (CG) or Multigrid methods, which is noconditional stable.
+
+### Projection step
+
+According to above statements, we get the projection step:
+
+$$ \nabla^2 p = \nabla \cdot w_3, w_4 = w_3 - \nabla p $$
+
+, which is the projection step, and here $w_4$ is the current velocity field.
