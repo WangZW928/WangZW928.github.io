@@ -28,18 +28,26 @@ Let us derive a tensor product form of the QFT:
 $$
 \begin{aligned}
 QFT(|j\rangle) 
-&= \frac{1}{\sqrt{N}} \sum_{k=0}^{N-1} e^{\frac{2 \pi i j k}{N}} |k\rangle \\
-&= \frac{1}{\sqrt{2^n}} \sum_{k_1=0}^{1} \cdots \sum_{k_n=0}^{1} e^{\frac{2\pi i j \sum_{l=1}^{n} k_l 2^{n-l}}} |k_1 k_2 \cdots k_n\rangle \\
-&= \frac{1}{\sqrt{2^n}} \sum_{k_1=0}^{1} \cdots \sum_{k_n=0}^{1} \bigotimes_{l=1}^{n} e^{2\pi i j k_l 2^{-l}} |k_l\rangle \\
-&= \frac{1}{\sqrt{2^n}} \bigotimes_{l=1}^{n} \sum_{k_l=0}^{1} e^{2\pi i j k_l 2^{-l}} |k_l\rangle \\
-&= \frac{1}{\sqrt{2^n}} \bigotimes_{l=1}^{n} \left( |0\rangle + e^{2\pi i j 2^{-l}} |1\rangle \right)
+&= \frac{1}{\sqrt{N}} \sum_{k=0}^{N-1} e^{\frac{2 \pi i j k}{N}} |k\rangle \quad \text{where } N = 2^n \\
+&= \frac{1}{\sqrt{2^n}} \sum_{k=0}^{2^n - 1} e^{\frac{2\pi i j k}{2^n}} |k\rangle \\
+&= \frac{1}{\sqrt{2^n}} \sum_{k_1=0}^{1} \cdots \sum_{k_n=0}^{1} 
+e^{\frac{2\pi i j}{2^n} \sum_{l=1}^{n} k_l 2^{n-l}} 
+|k_1 k_2 \cdots k_n\rangle \\
+&= \frac{1}{\sqrt{2^n}} \sum_{k_1, \ldots, k_n \in \{0,1\}} 
+\prod_{l=1}^{n} e^{2\pi i j k_l 2^{-l}} 
+|k_1 k_2 \cdots k_n\rangle \\
+&= \frac{1}{\sqrt{2^n}} \bigotimes_{l=1}^{n} 
+\left( |0\rangle + e^{2\pi i j 2^{-l}} |1\rangle \right)
 \end{aligned}
 $$
 
 This derivation is based on the relationship between binary and decimal representations:
 
-- For integers: \( |j\rangle = |\overline{j_1 j_2 \cdots j_n}\rangle \), where \( j = \sum_{l=1}^{n} 2^{n-l} j_l \)
-- For binary fractions: \( \overline{0.j_1 j_2 \cdots j_n} = \sum_{l=1}^{n} 2^{-l} j_l \)
+- For integers: 
+$$ |j\rangle = |\overline{j_1 j_2 \cdots j_n}\rangle \), where \( j = \sum_{l=1}^{n} 2^{n-l} j_l $$
+- For binary fractions: 
+$$ \overline{0.j_1 j_2 \cdots j_n} = \sum_{l=1}^{n} 2^{-l} j_l $$
+
 
 ## Simple Examples
 
