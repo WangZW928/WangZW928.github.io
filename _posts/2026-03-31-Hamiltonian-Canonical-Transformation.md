@@ -579,31 +579,178 @@ $$
 
 ---
 
-## 9. 为什么无穷小正则变换由 Poisson 括号生成
+## 9. 为什么无穷小正则变换由 Poisson 括号生成？
 
-设有一族依赖参数 $\epsilon$ 的正则变换
+本节想解释：
 
 $$
-(q,p)\mapsto (Q(\epsilon),P(\epsilon)),
+\boxed{
+\text{为什么任意无穷小正则变换都可以写成： } \delta f=\epsilon\{f,G\}\ ?
+}
+$$
+
+也就是说，为什么一定存在某个函数 $G(q,p,t)$，使得
+
+$$
+\delta q^i = \epsilon \frac{\partial G}{\partial p_i},
 \qquad
-Q(0)=q,\ P(0)=p.
+\delta p_i = -\epsilon \frac{\partial G}{\partial q^i}.
 $$
 
-定义其无穷小变化为
+一旦这两个式子成立，那么对任意相空间函数 $f(q,p)$，链式法则立刻给出
 
 $$
-\delta q^i = \left.\frac{dQ^i}{d\epsilon}\right|_{\epsilon=0},
+\begin{aligned}
+\delta f
+&=
+\sum_i \frac{\partial f}{\partial q^i}\delta q^i
++
+\sum_i \frac{\partial f}{\partial p_i}\delta p_i \\
+&=
+\epsilon \sum_i
+\left(
+\frac{\partial f}{\partial q^i}\frac{\partial G}{\partial p_i}
+-\frac{\partial f}{\partial p_i}\frac{\partial G}{\partial q^i}
+\right) \\
+&= \epsilon \{f,G\}.
+\end{aligned}
+$$
+
+
+下面用三种互相呼应的方式来说明。
+
+### 9.1 从“保持辛形式”直接推出
+
+先不要假设它由某个函数生成，而是写成最一般的无穷小形式
+
+$$
+Q^i = q^i + \epsilon \xi^i(q,p),
 \qquad
-\delta p_i = \left.\frac{dP_i}{d\epsilon}\right|_{\epsilon=0}.
+P_i = p_i + \epsilon \eta_i(q,p).
 $$
 
-由于每个 $\epsilon$ 都保持辛结构，因此这个无穷小流必须保持辛形式：
+这里 $\xi^i,\eta_i$ 是待定函数。
+
+因为是正则变换，所以它必须保持辛形式
 
 $$
-\mathcal{L}_X \omega = 0,
+\omega = \sum_i dq^i \wedge dp_i
 $$
 
-其中 $X$ 是生成该流的向量场。
+不变，也就是
+
+$$
+\sum_i dQ^i \wedge dP_i
+=\sum_i dq^i \wedge dp_i
+\qquad.
+$$
+
+展开到一阶：
+
+$$
+dQ^i = dq^i + \epsilon\, d\xi^i,
+\qquad
+dP_i = dp_i + \epsilon\, d\eta_i.
+$$
+
+因此
+
+$$
+dQ^i \wedge dP_i=
+dq^i \wedge dp_i
++
+\epsilon
+\left(
+d\xi^i \wedge dp_i
++
+dq^i \wedge d\eta_i
+\right)
++
+O(\epsilon^2).
+$$
+
+对所有 $i$ 求和，正则性要求一阶项为零：
+
+$$
+\sum_i
+\left(
+d\xi^i \wedge dp_i
++
+dq^i \wedge d\eta_i
+\right)
+=0.
+$$
+
+把它改写一下：
+
+$$
+d\left(
+\sum_i \xi^i\, dp_i - \eta_i\, dq^i
+\right)=0.
+$$
+
+所以 1-形式
+
+$$
+\alpha := \sum_i \xi^i\, dp_i - \eta_i\, dq^i
+$$
+
+是闭的。局部上闭形式就是恰当形式，因此存在某个函数 $G$，使得
+
+$$
+\boxed{
+\sum_i \xi^i\, dp_i - \eta_i\, dq^i = dG
+}
+$$
+
+比较 $dq^i$ 与 $dp_i$ 的系数，就得到
+
+$$
+\xi^i = \frac{\partial G}{\partial p_i},
+\qquad
+\eta_i = -\frac{\partial G}{\partial q^i}.
+$$
+
+于是
+
+$$
+\boxed{
+\delta q^i = \epsilon \xi^i = \epsilon \frac{\partial G}{\partial p_i},
+\qquad
+\delta p_i = \epsilon \eta_i = -\epsilon \frac{\partial G}{\partial q^i}
+}
+$$
+
+再用链式法则，就得到
+
+$$
+\boxed{
+\delta f = \epsilon \{f,G\}
+}
+$$
+
+这就是最直接的推导。
+
+### 9.2 用微分几何语言重述
+
+
+设无穷小变换对应的向量场为
+
+$$
+X=
+\sum_i
+\left(
+\xi^i \frac{\partial}{\partial q^i}
++
+\eta_i \frac{\partial}{\partial p_i}
+\right).
+$$
+
+由于每个 $\epsilon$ 都保持辛结构，因此这个无穷小流必须满足
+
+$$
+\mathcal{L}_X \omega = 0.
+$$
 
 利用 Cartan 公式
 
@@ -617,7 +764,7 @@ $$
 d(i_X\omega)=0.
 $$
 
-在局部上，闭 1-形式总可以写成某个函数的微分，因此存在函数 $G$，使得
+所以局部上存在函数 $G$，使得
 
 $$
 \boxed{
@@ -632,18 +779,109 @@ $$
 $$
 X_G
 = \frac{\partial G}{\partial p_i}\frac{\partial}{\partial q^i}
--\frac{\partial G}{\partial q^i}\frac{\partial}{\partial p_i}
+-\frac{\partial G}{\partial q^i}\frac{\partial}{\partial p_i}.
 $$
 
 因此
 
 $$
-\delta q^i = \epsilon \frac{\partial G}{\partial p_i} = \epsilon \{q^i,G\},
+\delta q^i = \epsilon X_G(q^i) = \epsilon \frac{\partial G}{\partial p_i},
 \qquad
-\delta p_i = -\epsilon \frac{\partial G}{\partial q^i} = \epsilon \{p_i,G\}.
+\delta p_i = \epsilon X_G(p_i) = -\epsilon \frac{\partial G}{\partial q^i}.
 $$
 
 更一般地，对任意可观测量 $f$，
+
+$$
+\boxed{
+\delta f = \epsilon X_G(f) = \epsilon \{f,G\}
+}
+$$
+
+这说明 Poisson 括号本质上就是 Hamilton 向量场作用在函数上的坐标表达。
+
+### 9.3 从生成函数角度直接推出
+
+对无穷小正则变换，最方便使用第二类生成函数：
+
+$$
+F_2(q,P,t)=
+\sum_i q^i P_i + \epsilon G(q,P,t).
+$$
+
+第一项对应恒等变换，$\epsilon G$ 表示在恒等变换附近做一个小扰动。
+
+第二类生成函数对应的正则变换公式为
+
+$$
+p_i = \frac{\partial F_2}{\partial q^i},
+\qquad
+Q^i = \frac{\partial F_2}{\partial P_i}.
+$$
+
+代入上式：
+
+$$
+p_i = P_i + \epsilon \frac{\partial G}{\partial q^i},
+\qquad
+Q^i = q^i + \epsilon \frac{\partial G}{\partial P_i}.
+$$
+
+在一阶近似下，$P_i$ 和 $p_i$ 的差本身已经是 $O(\epsilon)$，所以可以把$\frac{\partial G}{\partial P_i}$替换成$
+\frac{\partial G}{\partial p_i}.
+$
+
+于是
+
+$$
+\boxed{
+Q^i = q^i + \epsilon \frac{\partial G}{\partial p_i},
+\qquad
+P_i = p_i - \epsilon \frac{\partial G}{\partial q^i}
+}
+$$
+
+即
+
+$$
+\delta q^i = \epsilon \frac{\partial G}{\partial p_i},
+\qquad
+\delta p_i = -\epsilon \frac{\partial G}{\partial q^i}.
+$$
+
+所以从生成函数角度看，这个公式就是无穷小正则变换的一阶展开。
+
+### 9.4 与 Hamilton 方程的类比：
+
+因为它和 Hamilton 方程完全同型。
+
+Hamilton 方程是
+
+$$
+\dot q^i = \frac{\partial H}{\partial p_i} = \{q^i,H\},
+\qquad
+\dot p_i = -\frac{\partial H}{\partial q^i} = \{p_i,H\}.
+$$
+
+因此任意不显含时的函数 $f(q,p)$ 的演化为
+
+$$
+\frac{df}{dt} = \{f,H\}.
+$$
+
+这说明时间推进本身就是一个由 $H$ 生成的无穷小正则变换。在小时间 $dt$ 内，
+
+$$
+\delta f = dt\,\{f,H\}.
+$$
+
+如果不是沿“时间方向”推进，而是沿某个抽象参数 $\epsilon$ 方向推进，那么自然就写成
+
+$$
+\frac{df}{d\epsilon} = \{f,G\}.
+$$
+
+于是无穷小形式就是
 
 $$
 \boxed{
@@ -651,7 +889,14 @@ $$
 }
 $$
 
-所以 Poisson 括号并不是一个“碰巧方便的公式”，而是**无穷小正则变换的自然生成机制**。
+在这个意义下：
+
+- $H$ 生成时间平移
+- 线动量 $p$ 生成空间平移
+- 角动量 $L_z$ 生成旋转
+- 一般的 $G$ 生成某种连续正则变换
+
+所以这条公式本质上是 Hamilton 方程从“时间演化”推广到“一般连续相空间流”的统一表达。
 
 ---
 
