@@ -1,0 +1,488 @@
+<div class="generator-flow-demo" id="generator-flow-demo">
+  <style>
+    .generator-flow-demo {
+      margin: 2rem 0;
+      color: #222;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+    }
+
+    .generator-flow-demo .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .generator-flow-demo h3 {
+      font-size: 1.4rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .generator-flow-demo .desc,
+    .generator-flow-demo .controls,
+    .generator-flow-demo .formula {
+      background: #fff;
+      padding: 14px 16px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      margin-bottom: 16px;
+    }
+
+    .generator-flow-demo .desc,
+    .generator-flow-demo .formula {
+      line-height: 1.7;
+    }
+
+    .generator-flow-demo .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+      align-items: center;
+    }
+
+    .generator-flow-demo label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+
+    .generator-flow-demo input,
+    .generator-flow-demo select,
+    .generator-flow-demo button {
+      font-size: 14px;
+      padding: 6px 10px;
+    }
+
+    .generator-flow-demo button {
+      cursor: pointer;
+    }
+
+    .generator-flow-demo canvas {
+      display: block;
+      width: 100%;
+      max-width: 960px;
+      height: auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      margin-bottom: 16px;
+    }
+
+    .generator-flow-demo code {
+      background: #f1f1f1;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+  </style>
+
+  <div class="wrap">
+    <h3>生成元诱导的无穷小流</h3>
+
+    <div class="desc">
+      对给定生成元 <code>G(q,p)</code>，相空间流由下面方程决定：
+      <br />
+      <code>dq/ds = ∂G/∂p</code>，
+      <code>dp/ds = -∂G/∂q</code>。
+      <br />
+      这里 <code>s</code> 是变换参数。这说明一个生成元 <code>G</code> 会在相空间里生成一条流。
+    </div>
+
+    <div class="controls">
+      <label>
+        生成元
+        <select data-role="generator-select">
+          <option value="translation">G = p（平移）</option>
+          <option value="rotation" selected>G = (q² + p²)/2（旋转）</option>
+          <option value="squeeze">G = q p（双曲拉伸）</option>
+        </select>
+      </label>
+
+      <label>
+        步长 dt
+        <input data-role="dt-input" type="number" step="0.001" value="0.02" />
+      </label>
+
+      <label>
+        积分步数
+        <input data-role="steps-input" type="number" step="10" value="250" />
+      </label>
+
+      <label>
+        轨线数量
+        <input data-role="count-input" type="number" step="1" value="24" />
+      </label>
+
+      <button data-role="draw-btn" type="button">重绘</button>
+      <button data-role="animate-btn" type="button">动画</button>
+      <button data-role="stop-btn" type="button">停止</button>
+    </div>
+
+    <canvas data-role="canvas" width="960" height="700"></canvas>
+
+    <div class="formula" data-role="formula-box"></div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const root = document.getElementById("generator-flow-demo");
+    if (!root || root.dataset.initialized === "true") return;
+    root.dataset.initialized = "true";
+
+    const canvas = root.querySelector('[data-role="canvas"]');
+    const ctx = canvas.getContext("2d");
+
+    const generatorSelect = root.querySelector('[data-role="generator-select"]');
+    const dtInput = root.querySelector('[data-role="dt-input"]');
+    const stepsInput = root.querySelector('[data-role="steps-input"]');
+    const countInput = root.querySelector('[data-role="count-input"]');
+    const drawBtn = root.querySelector('[data-role="draw-btn"]');
+    const animateBtn = root.querySelector('[data-role="animate-btn"]');
+    const stopBtn = root.querySelector('[data-role="stop-btn"]');
+    const formulaBox = root.querySelector('[data-role="formula-box"]');
+
+    const W = canvas.width;
+    const H = canvas.height;
+
+    const qMin = -5;
+    const qMax = 5;
+    const pMin = -5;
+    const pMax = 5;
+
+    let animationId = null;
+    let particles = [];
+    let currentGeneratorName = "rotation";
+
+    function worldToCanvas(q, p) {
+      const x = ((q - qMin) / (qMax - qMin)) * W;
+      const y = H - ((p - pMin) / (pMax - pMin)) * H;
+      return { x, y };
+    }
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    function drawAxes() {
+      ctx.save();
+      ctx.strokeStyle = "#bbb";
+      ctx.lineWidth = 1;
+
+      for (let q = Math.ceil(qMin); q <= Math.floor(qMax); q++) {
+        const { x } = worldToCanvas(q, 0);
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, H);
+        ctx.stroke();
+      }
+
+      for (let p = Math.ceil(pMin); p <= Math.floor(pMax); p++) {
+        const { y } = worldToCanvas(0, p);
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = "#444";
+      ctx.lineWidth = 1.8;
+      const y0 = worldToCanvas(0, 0).y;
+      ctx.beginPath();
+      ctx.moveTo(0, y0);
+      ctx.lineTo(W, y0);
+      ctx.stroke();
+
+      const x0 = worldToCanvas(0, 0).x;
+      ctx.beginPath();
+      ctx.moveTo(x0, 0);
+      ctx.lineTo(x0, H);
+      ctx.stroke();
+
+      ctx.fillStyle = "#111";
+      ctx.font = "16px Arial";
+      ctx.fillText("q", W - 20, y0 - 10);
+      ctx.fillText("p", x0 + 10, 20);
+      ctx.restore();
+    }
+
+    function getGenerator(name) {
+      if (name === "translation") {
+        return {
+          desc:
+`生成元：G(q,p) = p
+
+∂G/∂p = 1
+∂G/∂q = 0
+
+所以流方程是：
+dq/ds = 1
+dp/ds = 0
+
+这说明相空间点沿 q 方向匀速平移。
+这正对应“动量 p 生成空间平移”。`,
+          dGdp: () => 1,
+          dGdq: () => 0
+        };
+      }
+
+      if (name === "rotation") {
+        return {
+          desc:
+`生成元：G(q,p) = (q² + p²)/2
+
+∂G/∂p = p
+∂G/∂q = q
+
+所以流方程是：
+dq/ds = p
+dp/ds = -q
+
+这是相空间中的圆周旋转。
+它和简谐振子的 Hamilton 流同型。`,
+          dGdp: (q, p) => p,
+          dGdq: (q, p) => q
+        };
+      }
+
+      if (name === "squeeze") {
+        return {
+          desc:
+`生成元：G(q,p) = q p
+
+∂G/∂p = q
+∂G/∂q = p
+
+所以流方程是：
+dq/ds = q
+dp/ds = -p
+
+解的形式是：
+q(s) = q(0)e^s
+p(s) = p(0)e^{-s}
+
+这对应相空间中的双曲拉伸。`,
+          dGdp: (q, p) => q,
+          dGdq: (q, p) => p
+        };
+      }
+
+      throw new Error("未知生成元");
+    }
+
+    function rk4Step(q, p, h, gen) {
+      function field(qv, pv) {
+        return {
+          dq: gen.dGdp(qv, pv),
+          dp: -gen.dGdq(qv, pv)
+        };
+      }
+
+      const k1 = field(q, p);
+      const k2 = field(q + 0.5 * h * k1.dq, p + 0.5 * h * k1.dp);
+      const k3 = field(q + 0.5 * h * k2.dq, p + 0.5 * h * k2.dp);
+      const k4 = field(q + h * k3.dq, p + h * k3.dp);
+
+      return {
+        q: q + (h / 6) * (k1.dq + 2 * k2.dq + 2 * k3.dq + k4.dq),
+        p: p + (h / 6) * (k1.dp + 2 * k2.dp + 2 * k3.dp + k4.dp)
+      };
+    }
+
+    function drawArrow(q, p, dq, dp, scale) {
+      const start = worldToCanvas(q, p);
+      const end = worldToCanvas(q + scale * dq, p + scale * dp);
+
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      const len = Math.hypot(dx, dy);
+      if (len < 1e-6) return;
+
+      const ux = dx / len;
+      const uy = dy / len;
+
+      ctx.save();
+      ctx.strokeStyle = "#4a6fa5";
+      ctx.fillStyle = "#4a6fa5";
+      ctx.lineWidth = 1.2;
+
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(end.x, end.y);
+      ctx.stroke();
+
+      const ah = 8;
+      const aw = 5;
+      ctx.beginPath();
+      ctx.moveTo(end.x, end.y);
+      ctx.lineTo(end.x - ah * ux + aw * uy, end.y - ah * uy - aw * ux);
+      ctx.lineTo(end.x - ah * ux - aw * uy, end.y - ah * uy + aw * ux);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawVectorField(gen) {
+      for (let q = -4.5; q <= 4.5; q += 1.0) {
+        for (let p = -4.5; p <= 4.5; p += 1.0) {
+          drawArrow(q, p, gen.dGdp(q, p), -gen.dGdq(q, p), 0.18);
+        }
+      }
+    }
+
+    function makeInitialPoints(n) {
+      const pts = [];
+      const radiusLevels = [1.0, 2.0, 3.0];
+      const perLevel = Math.max(1, Math.floor(n / radiusLevels.length));
+
+      for (const r of radiusLevels) {
+        for (let k = 0; k < perLevel; k++) {
+          const theta = (2 * Math.PI * k) / perLevel;
+          pts.push({
+            q: r * Math.cos(theta),
+            p: r * Math.sin(theta)
+          });
+        }
+      }
+
+      return pts;
+    }
+
+    function drawTrajectory(q0, p0, dt, steps, gen) {
+      let q = q0;
+      let p = p0;
+
+      ctx.save();
+      ctx.strokeStyle = "#cc5500";
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+
+      const first = worldToCanvas(q, p);
+      ctx.moveTo(first.x, first.y);
+
+      for (let i = 0; i < steps; i++) {
+        const next = rk4Step(q, p, dt, gen);
+        q = next.q;
+        p = next.p;
+        const pt = worldToCanvas(q, p);
+        ctx.lineTo(pt.x, pt.y);
+      }
+
+      ctx.stroke();
+
+      const start = worldToCanvas(q0, p0);
+      ctx.fillStyle = "#d62728";
+      ctx.beginPath();
+      ctx.arc(start.x, start.y, 3.5, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawAllTrajectories() {
+      const gen = getGenerator(currentGeneratorName);
+      const dt = Number(dtInput.value);
+      const steps = Number(stepsInput.value);
+      const count = Number(countInput.value);
+
+      clearCanvas();
+      drawAxes();
+      drawVectorField(gen);
+
+      for (const pt of makeInitialPoints(count)) {
+        drawTrajectory(pt.q, pt.p, dt, steps, gen);
+      }
+
+      formulaBox.textContent = gen.desc;
+    }
+
+    function initParticles() {
+      particles = makeInitialPoints(Number(countInput.value)).map((pt) => ({
+        q: pt.q,
+        p: pt.p,
+        trail: [{ q: pt.q, p: pt.p }]
+      }));
+    }
+
+    function drawParticlesFrame() {
+      const gen = getGenerator(currentGeneratorName);
+
+      clearCanvas();
+      drawAxes();
+      drawVectorField(gen);
+
+      for (const particle of particles) {
+        ctx.save();
+        ctx.strokeStyle = "#cc5500";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+
+        const first = worldToCanvas(particle.trail[0].q, particle.trail[0].p);
+        ctx.moveTo(first.x, first.y);
+
+        for (let i = 1; i < particle.trail.length; i++) {
+          const pt = worldToCanvas(particle.trail[i].q, particle.trail[i].p);
+          ctx.lineTo(pt.x, pt.y);
+        }
+
+        ctx.stroke();
+
+        const pos = worldToCanvas(particle.q, particle.p);
+        ctx.fillStyle = "#d62728";
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 4, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      formulaBox.textContent = gen.desc;
+    }
+
+    function stopAnimation() {
+      if (animationId !== null) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+    }
+
+    function animate() {
+      stopAnimation();
+      initParticles();
+
+      const gen = getGenerator(currentGeneratorName);
+      const dt = Number(dtInput.value);
+
+      function frame() {
+        for (const particle of particles) {
+          const next = rk4Step(particle.q, particle.p, dt, gen);
+          particle.q = next.q;
+          particle.p = next.p;
+          particle.trail.push({ q: particle.q, p: particle.p });
+
+          if (particle.trail.length > 300) {
+            particle.trail.shift();
+          }
+        }
+
+        drawParticlesFrame();
+        animationId = requestAnimationFrame(frame);
+      }
+
+      frame();
+    }
+
+    drawBtn.addEventListener("click", function () {
+      stopAnimation();
+      currentGeneratorName = generatorSelect.value;
+      drawAllTrajectories();
+    });
+
+    animateBtn.addEventListener("click", function () {
+      currentGeneratorName = generatorSelect.value;
+      animate();
+    });
+
+    stopBtn.addEventListener("click", stopAnimation);
+
+    drawAllTrajectories();
+  })();
+</script>
