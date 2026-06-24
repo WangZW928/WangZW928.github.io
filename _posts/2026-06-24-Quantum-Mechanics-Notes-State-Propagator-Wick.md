@@ -502,15 +502,21 @@ H(x,p)=\frac{p^2}{2m}+V(x)
 量子化后：
 
 \[
-x\rightarrow \hat x
+x
+\rightarrow
+\hat x
 \]
 
 \[
-p\rightarrow \hat p
+p
+\rightarrow
+\hat p
 \]
 
 \[
-H(x,p)\rightarrow \hat H(\hat x,\hat p)
+H(x,p)
+\rightarrow
+\hat H(\hat x,\hat p)
 \]
 
 在位置表象中：
