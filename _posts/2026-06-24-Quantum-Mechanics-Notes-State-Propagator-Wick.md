@@ -299,7 +299,7 @@ x(t),\quad p(t)
 
 \\[
 \phi(p)
-=======
+=
 
 \frac{1}{\sqrt{2\pi\hbar}}
 \int_{-\infty}^{+\infty}
@@ -310,7 +310,7 @@ e^{-ipx/\hbar}\psi(x)\,dx
 
 \\[
 \psi(x)
-=======
+=
 
 \frac{1}{\sqrt{2\pi\hbar}}
 \int_{-\infty}^{+\infty}
@@ -529,7 +529,7 @@ H(x,p)\rightarrow \hat H(\hat x,\hat p)
 
 \\[
 \hat H
-======
+=
 
 -\frac{\hbar^2}{2m}\frac{d^2}{dx^2}+V(x)
 \\]
@@ -537,7 +537,7 @@ H(x,p)\rightarrow \hat H(\hat x,\hat p)
 于是薛定谔方程变成：
 \\[
 i\hbar\frac{\partial}{\partial t}\psi(x,t)
-==========================================
+=
 
 \hat H\psi(x,t)
 \\]
@@ -546,7 +546,7 @@ i\hbar\frac{\partial}{\partial t}\psi(x,t)
 
 \\[
 i\hbar\frac{\partial}{\partial t}\psi(x,t)
-==========================================
+=
 
 \left[
 -\frac{\hbar^2}{2m}\frac{d^2}{dx^2}+V(x)
@@ -714,7 +714,7 @@ i\hbar\frac{\partial}{\partial t}
 -\hat H
 \right)
 K(x,t;x',t')
-============
+=
 
 i\hbar\delta(t-t')\delta(x-x')
 \\]
@@ -743,7 +743,7 @@ i\hbar\partial_t-\hat H
 
 \\[
 K(x_b,t_b;x_a,t_a)
-==================
+=
 
 \int_{x(t_a)=x_a}^{x(t_b)=x_b}
 \mathcal D x(t)\,
@@ -871,7 +871,7 @@ C_E(\tau)\sim e^{-\Delta E\tau/\hbar}
 
 \\[
 K(x,t;x',0)
-===========
+=
 
 \sqrt{\frac{m}{2\pi i\hbar t}}
 \exp\left[
@@ -891,7 +891,7 @@ t=-i\tau
 
 \\[
 K_E(x,\tau;x',0)
-================
+=
 
 \sqrt{\frac{m}{2\pi\hbar\tau}}
 \exp\left[
@@ -1042,7 +1042,7 @@ H(x,p)
 
 \\[
 i\hbar\frac{\partial}{\partial t}|\psi(t)\rangle
-================================================
+=
 
 \hat H|\psi(t)\rangle
 \\]
@@ -1057,7 +1057,7 @@ i\hbar\frac{\partial}{\partial t}|\psi(t)\rangle
 
 \\[
 K(x,t;x',t')
-============
+=
 
 \langle x|e^{-i\hat H(t-t')/\hbar}|x'\rangle
 \\]
