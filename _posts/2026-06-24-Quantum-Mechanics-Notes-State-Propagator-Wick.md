@@ -502,21 +502,15 @@ H(x,p)=\frac{p^2}{2m}+V(x)
 量子化后：
 
 \[
-x
-\rightarrow
-\hat x
+x \rightarrow \hat x
 \]
 
 \[
-p
-\rightarrow
-\hat p
+p \rightarrow \hat p
 \]
 
 \[
-H(x,p)
-\rightarrow
-\hat H(\hat x,\hat p)
+H(x,p) \rightarrow \hat H(\hat x,\hat p)
 \]
 
 在位置表象中：
@@ -594,9 +588,7 @@ H(x,p)
 正则量子化要求：
 
 \[
-\{A,B\}
-\rightarrow
-\frac{1}{i\hbar}[\hat A,\hat B]
+\{A,B\} \rightarrow \frac{1}{i\hbar}[\hat A,\hat B]
 \]
 
 因此：
@@ -1080,9 +1072,7 @@ t=-i\tau
 后：
 
 \[
-e^{iS/\hbar}
-\rightarrow
-e^{-S_E/\hbar}
+e^{iS/\hbar} \rightarrow e^{-S_E/\hbar}
 \]
 
 振荡问题变成衰减问题，从而可以提取基态、能谱和统计物理信息。
