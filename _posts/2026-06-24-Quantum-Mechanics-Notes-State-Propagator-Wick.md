@@ -300,6 +300,7 @@ x(t),\quad p(t)
 \[
 \phi(p)
 =
+
 \frac{1}{\sqrt{2\pi\hbar}}
 \int_{-\infty}^{+\infty}
 e^{-ipx/\hbar}\psi(x)\,dx
@@ -310,6 +311,7 @@ e^{-ipx/\hbar}\psi(x)\,dx
 \[
 \psi(x)
 =
+
 \frac{1}{\sqrt{2\pi\hbar}}
 \int_{-\infty}^{+\infty}
 e^{ipx/\hbar}\phi(p)\,dp
@@ -502,22 +504,24 @@ H(x,p)=\frac{p^2}{2m}+V(x)
 量子化后：
 
 \[
-x \rightarrow \hat x
+x\rightarrow \hat x
 \]
 
 \[
-p \rightarrow \hat p
+p\rightarrow \hat p
 \]
 
 \[
-H(x,p) \rightarrow \hat H(\hat x,\hat p)
+H(x,p)\rightarrow \hat H(\hat x,\hat p)
 \]
 
 在位置表象中：
 
 \[
 \hat x=x
-\]\[
+\]
+
+\[
 \hat p=-i\hbar\frac{d}{dx}
 \]
 
@@ -526,6 +530,7 @@ H(x,p) \rightarrow \hat H(\hat x,\hat p)
 \[
 \hat H
 =
+
 -\frac{\hbar^2}{2m}\frac{d^2}{dx^2}+V(x)
 \]
 
@@ -588,7 +593,9 @@ H(x,p)
 正则量子化要求：
 
 \[
-\{A,B\} \rightarrow \frac{1}{i\hbar}[\hat A,\hat B]
+\{A,B\}
+\rightarrow
+\frac{1}{i\hbar}[\hat A,\hat B]
 \]
 
 因此：
@@ -705,6 +712,7 @@ i\hbar\frac{\partial}{\partial t}
 \right)
 K(x,t;x',t')
 =
+
 i\hbar\delta(t-t')\delta(x-x')
 \]
 
@@ -733,6 +741,7 @@ i\hbar\partial_t-\hat H
 \[
 K(x_b,t_b;x_a,t_a)
 =
+
 \int_{x(t_a)=x_a}^{x(t_b)=x_b}
 \mathcal D x(t)\,
 e^{iS[x]/\hbar}
@@ -860,6 +869,7 @@ C_E(\tau)\sim e^{-\Delta E\tau/\hbar}
 \[
 K(x,t;x',0)
 =
+
 \sqrt{\frac{m}{2\pi i\hbar t}}
 \exp\left[
 \frac{im(x-x')^2}{2\hbar t}
@@ -879,6 +889,7 @@ t=-i\tau
 \[
 K_E(x,\tau;x',0)
 =
+
 \sqrt{\frac{m}{2\pi\hbar\tau}}
 \exp\left[
 -\frac{m(x-x')^2}{2\hbar\tau}
@@ -1028,7 +1039,9 @@ H(x,p)
 
 \[
 i\hbar\frac{\partial}{\partial t}|\psi(t)\rangle
-=\hat H|\psi(t)\rangle
+=
+
+\hat H|\psi(t)\rangle
 \]
 
 决定。
@@ -1042,6 +1055,7 @@ i\hbar\frac{\partial}{\partial t}|\psi(t)\rangle
 \[
 K(x,t;x',t')
 =
+
 \langle x|e^{-i\hat H(t-t')/\hbar}|x'\rangle
 \]
 
@@ -1072,7 +1086,9 @@ t=-i\tau
 后：
 
 \[
-e^{iS/\hbar} \rightarrow e^{-S_E/\hbar}
+e^{iS/\hbar}
+\rightarrow
+e^{-S_E/\hbar}
 \]
 
 振荡问题变成衰减问题，从而可以提取基态、能谱和统计物理信息。
