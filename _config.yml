@@ -16,8 +16,8 @@
 
 ## => Site Settings
 ##############################
-text_skin: forest # "default" (default), "dark", "forest", "ocean", "chocolate", "orange"
-highlight_theme: tomorrow-night-blue # "default" (default), "tomorrow", "tomorrow-night", "tomorrow-night-eighties", "tomorrow-night-blue", "tomorrow-night-bright"
+text_skin: custom_dark # "default" (default), "dark", "forest", "ocean", "chocolate", "orange", "custom_dark"
+highlight_theme: tomorrow-night # "default" (default), "tomorrow", "tomorrow-night", "tomorrow-night-eighties", "tomorrow-night-blue", "tomorrow-night-bright"
 url     : https://wangzw928.github.io
 baseurl : # does not include hostname
 title   : Marcus Wang | Personal Site
