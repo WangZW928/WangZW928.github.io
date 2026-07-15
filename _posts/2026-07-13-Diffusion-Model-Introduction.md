@@ -47,6 +47,54 @@ $$x_t = \sqrt{\bar{\alpha}_t}\,x_0 + \sqrt{1 - \bar{\alpha}_t}\,\epsilon$$
 
 ---
 
+## 1.5. SGLD 与扩散模型的关系
+
+在理解 DDPM 的反向过程之前，可以先看一个更一般的采样方法：Stochastic Gradient Langevin Dynamics（SGLD）。它来自 Langevin dynamics，连续时间形式可以写成：
+
+$$dx = \nabla_x \log p(x)\,dt + \sqrt{2}\,dW$$
+
+其中 $W$ 是标准 Wiener process，$dW$ 表示随机布朗运动的增量。第一项 $\nabla_x \log p(x)$ 称为 score function，它指向概率密度上升最快的方向；第二项 $\sqrt{2}\,dW$ 注入随机噪声，使采样不会只停在某个局部高概率点，而是能够覆盖整个目标分布。
+
+把上式离散化，得到类似下面的更新：
+
+$$x_{k+1} = x_k + \eta \nabla_x \log p(x_k) + \sqrt{2\eta}\,z_k,\qquad z_k\sim\mathcal{N}(0,\mathbf{I})$$
+
+这就是 Langevin sampling 的基本形式。SGLD 的思想是：如果无法直接从 $p(x)$ 采样，但可以估计或学习它的 score $\nabla_x\log p(x)$，就可以用“沿 score 做梯度上升 + 注入高斯噪声”的方式，把样本逐渐推向高概率区域。
+
+扩散模型的反向 SDE 可以看成一种随时间变化的 score-based Langevin sampling。正向过程不断把数据分布 $q(x_0)$ 平滑成噪声分布；反向过程则需要在每个噪声水平 $t$ 上知道当前边缘分布 $q(x_t)$ 的 score：
+
+$$\nabla_{x_t}\log q(x_t)$$
+
+然后用这个 score 把 $x_t$ 推回更接近数据流形的区域。Song et al. 的 score-based generative modeling 正是从这个角度统一了 score matching、Langevin dynamics 和扩散模型：先学习不同噪声水平下的 score，再用反向 SDE 或相关采样器生成数据。
+
+在 DDPM 中，反向一步写成：
+
+$$x_{t-1} = \mu_\theta(x_t,t) + \sigma_t z,\qquad z\sim\mathcal{N}(0,\mathbf{I})$$
+
+它也可以理解为一个离散的 Langevin-like step：$\mu_\theta(x_t,t)$ 提供向高概率区域移动的确定性方向，$\sigma_t z$ 保留随机采样所需的噪声。后文 Section 7 会推导 $\mu_\theta(x_t,t)$ 的具体形式。
+
+DDPM 通常不直接训练网络输出 score，而是训练网络预测正向加噪公式中的噪声 $\epsilon$。由 Section 3 的直达公式：
+
+$$x_t = \sqrt{\bar{\alpha}_t}\,x_0 + \sqrt{1-\bar{\alpha}_t}\,\epsilon$$
+
+如果固定 $x_0$，则条件分布 $q(x_t\vert{}x_0)$ 的 score 为：
+
+$$\nabla_{x_t}\log q(x_t\vert{}x_0)
+= -\frac{x_t-\sqrt{\bar{\alpha}_t}x_0}{1-\bar{\alpha}_t}
+= -\frac{\epsilon}{\sqrt{1-\bar{\alpha}_t}}$$
+
+因此在训练好的模型中，噪声预测与 score 之间有近似关系：
+
+$$\epsilon_\theta(x_t,t)\approx -\sqrt{1-\bar{\alpha}_t}\,\nabla_{x_t}\log q(x_t)$$
+
+等价地：
+
+$$\nabla_{x_t}\log q(x_t)\approx -\frac{1}{\sqrt{1-\bar{\alpha}_t}}\epsilon_\theta(x_t,t)$$
+
+关键理解是：DDPM 表面上在学习预测噪声，实质上是在学习不同噪声水平下的 score function。采样时，模型把这个学到的 score 代入反向高斯转移中，于是生成过程就可以看作由学习到的 score 引导的 Langevin dynamics。
+
+---
+
 ## 2. 正向扩散：单步转移
 
 正向扩散过程定义为一个固定的马尔可夫链：
@@ -266,6 +314,104 @@ $$
 $$
 
 所以预测噪声与预测干净图像在代数上可以互相转换，但噪声目标通常更稳定。
+
+---
+
+## 6.1. 从 ELBO 推导训练目标
+
+Section 6 直接给出了常用的简化噪声预测目标。本节补上它和变分下界之间的关系：DDPM 的训练并不是凭空选择 MSE，而是从最大化数据似然的变分下界推导而来，最后再简化成预测噪声。
+
+生成模型的目标是最大化 $\log p_\theta(x_0)$，等价于最小化负对数似然 $-\log p_\theta(x_0)$。由于反向链中存在隐变量 $x_1,\dots,x_T$，直接计算边缘似然很困难，于是引入正向扩散过程 $q(x_{1:T}\vert{}x_0)$ 作为变分分布。负对数似然有如下上界：
+
+$$-\log p_\theta(x_0) \leq \mathbb{E}_q\left[-\log p(x_T) - \sum_{t \geq 1} \log \frac{p_\theta(x_{t-1}\vert{}x_t)}{q(x_t\vert{}x_{t-1})}\right]$$
+
+这个式子就是负 ELBO 的一种写法。进一步利用 Section 2 的马尔可夫结构和 Section 7 中的后验 $q(x_{t-1}\vert{}x_t,x_0)$，可以整理成 KL divergence 的形式：
+
+$$\mathcal{L} = \mathbb{E}_q\left[
+\underbrace{D_{KL}(q(x_T\vert{}x_0) \Vert p(x_T))}_{L_T}
++ \sum_{t=2}^T \underbrace{D_{KL}(q(x_{t-1}\vert{}x_t, x_0) \Vert p_\theta(x_{t-1}\vert{}x_t))}_{L_{t-1}}
+- \underbrace{\log p_\theta(x_0\vert{}x_1)}_{L_0}
+\right]$$
+
+其中 $L_T$ 约束正向终点接近先验 $p(x_T)=\mathcal{N}(0,\mathbf{I})$；$L_0$ 对应最后一步从 $x_1$ 还原 $x_0$；中间项 $L_{t-1}$ 则训练模型反向转移 $p_\theta(x_{t-1}\vert{}x_t)$ 去匹配真实后验 $q(x_{t-1}\vert{}x_t,x_0)$。
+
+对 $t\ge 2$，两边都是高斯分布：
+
+$$q(x_{t-1}\vert{}x_t,x_0)
+= \mathcal{N}\big(x_{t-1};\tilde{\mu}_t(x_t,x_0),\tilde{\beta}_t\mathbf{I}\big)$$
+
+$$p_\theta(x_{t-1}\vert{}x_t)
+= \mathcal{N}\big(x_{t-1};\mu_\theta(x_t,t),\sigma_t^2\mathbf{I}\big)$$
+
+两个协方差固定的高斯分布之间的 KL divergence，只剩下均值差的二次项和与 $\theta$ 无关的常数。忽略不影响优化的常数后：
+
+$$L_{t-1}
+= \mathbb{E}_{x_0,\epsilon}\left[
+\frac{1}{2\sigma_t^2}
+\left\Vert\tilde{\mu}_t(x_t,x_0)-\mu_\theta(x_t,t)\right\Vert^2
+\right]$$
+
+这里的 $x_t$ 由 Section 3 的重参数化公式生成：
+
+$$x_t = \sqrt{\bar{\alpha}_t}\,x_0 + \sqrt{1-\bar{\alpha}_t}\,\epsilon,\qquad \epsilon\sim\mathcal{N}(0,\mathbf{I})$$
+
+Section 7 会推导出真实后验均值可以写成关于真实噪声 $\epsilon$ 的形式：
+
+$$\tilde{\mu}_t(x_t,\epsilon)
+= \frac{1}{\sqrt{\alpha_t}}
+\left(
+x_t-\frac{\beta_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon
+\right)$$
+
+模型均值则用预测噪声 $\epsilon_\theta(x_t,t)$ 参数化：
+
+$$\mu_\theta(x_t,t)
+= \frac{1}{\sqrt{\alpha_t}}
+\left(
+x_t-\frac{\beta_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon_\theta(x_t,t)
+\right)$$
+
+因此两者的差为：
+
+$$
+\begin{aligned}
+\tilde{\mu}_t(x_t,\epsilon)-\mu_\theta(x_t,t)
+&= \frac{1}{\sqrt{\alpha_t}}
+\left(
+-\frac{\beta_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon
++\frac{\beta_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon_\theta(x_t,t)
+\right) \\
+&= \frac{\beta_t}{\sqrt{\alpha_t}\sqrt{1-\bar{\alpha}_t}}
+\left(\epsilon_\theta(x_t,t)-\epsilon\right)
+\end{aligned}
+$$
+
+代回 $L_{t-1}$：
+
+$$L_{t-1}
+= \mathbb{E}_{x_0,\epsilon}\left[
+\frac{\beta_t^2}{2\sigma_t^2\alpha_t(1-\bar{\alpha}_t)}
+\left\Vert \epsilon-\epsilon_\theta(x_t,t)\right\Vert^2
+\right]$$
+
+严格的 ELBO 对不同时间步会有一个依赖 $t$ 的权重：
+
+$$w_t = \frac{\beta_t^2}{2\sigma_t^2\alpha_t(1-\bar{\alpha}_t)}$$
+
+Ho et al. 的 DDPM 发现，去掉这个权重、直接均匀采样时间步并优化噪声 MSE，通常会得到更稳定、更好的生成质量。于是得到 Section 6 使用的简化目标：
+
+$$L_{\text{simple}}(\theta)
+= \mathbb{E}_{t,x_0,\epsilon}\left[
+\left\Vert\epsilon-\epsilon_\theta(x_t,t)\right\Vert^2
+\right]$$
+
+这个期望包含三层随机性：
+
+1. $t$ 来自时间步采样，通常在 $\{1,\dots,T\}$ 上均匀采样，用来训练模型处理不同噪声强度；
+2. $x_0$ 来自训练数据分布 $q(x_0)$，对应真实图片样本；
+3. $\epsilon\sim\mathcal{N}(0,\mathbf{I})$ 是正向加噪时采样的高斯噪声，决定当前训练样本的具体 $x_t$。
+
+所以，$L_{\text{simple}}$ 不是独立于 ELBO 的经验技巧，而是把高斯 KL 中的均值匹配项重参数化为噪声预测，再省略时间相关权重后的简化版本。
 
 ---
 
