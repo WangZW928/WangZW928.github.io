@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KL 散度在线模拟</title>
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      chtml: { scale: 0.95 }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #5d6678;
+      --line: #d9deea;
+      --blue: #246bfe;
+      --blue-soft: rgba(36, 107, 254, 0.13);
+      --red: #d94b4b;
+      --red-soft: rgba(217, 75, 75, 0.12);
+      --amber: rgba(245, 158, 11, 0.2);
+      --shadow: 0 20px 60px rgba(26, 35, 58, 0.12);
+      --radius: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111827;
+        --panel: #182235;
+        --text: #edf2ff;
+        --muted: #a8b3c7;
+        --line: #344157;
+        --blue: #75a7ff;
+        --blue-soft: rgba(117, 167, 255, 0.16);
+        --red: #ff8585;
+        --red-soft: rgba(255, 133, 133, 0.14);
+        --amber: rgba(245, 158, 11, 0.18);
+        --shadow: 0 20px 60px rgba(0, 0, 0, 0.32);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 48px;
+    }
+
+    header {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 820px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.85fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .plot-panel {
+      overflow: hidden;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      padding: 16px;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: min(58vh, 560px);
+      min-height: 360px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: color-mix(in srgb, var(--panel) 92%, var(--bg));
+    }
+
+    .formula {
+      padding: 2px 18px 18px;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 12px;
+      background: color-mix(in srgb, var(--panel) 88%, var(--bg));
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 4px;
+      font-size: clamp(1.45rem, 4vw, 2rem);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat.p strong {
+      color: var(--blue);
+    }
+
+    .stat.q strong {
+      color: var(--red);
+    }
+
+    .controls {
+      padding: 16px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .group {
+      display: grid;
+      gap: 12px;
+    }
+
+    .group-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .legend {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      white-space: nowrap;
+    }
+
+    .sample-line {
+      width: 30px;
+      height: 0;
+      border-top: 3px solid var(--blue);
+    }
+
+    .sample-line.red {
+      border-top-color: var(--red);
+      border-top-style: dashed;
+    }
+
+    .control {
+      display: grid;
+      gap: 6px;
+    }
+
+    .control label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .control output {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--blue);
+    }
+
+    .q-range {
+      accent-color: var(--red);
+    }
+
+    .presets {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    button {
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: color-mix(in srgb, var(--panel) 88%, var(--bg));
+      color: var(--text);
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button:hover,
+    button:focus-visible {
+      border-color: color-mix(in srgb, var(--blue) 60%, var(--line));
+      outline: none;
+    }
+
+    .note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 860px) {
+      main {
+        width: min(100% - 20px, 720px);
+        padding-top: 20px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      canvas {
+        height: 430px;
+        min-height: 320px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .stats,
+      .presets {
+        grid-template-columns: 1fr;
+      }
+
+      .group-title {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>KL 散度在线模拟</h1>
+      <p class="lead">
+        KL 散度 $D_{KL}(P\Vert Q)$ 衡量用分布 $Q$ 近似真实分布 $P$ 时的额外信息代价。拖动下面的均值和标准差，观察两个高斯分布的形状变化，以及 $D_{KL}(P\Vert Q)$ 与 $D_{KL}(Q\Vert P)$ 为什么通常不同。
+      </p>
+    </header>
+
+    <section class="layout" aria-label="KL 散度交互演示">
+      <div class="panel plot-panel">
+        <div class="canvas-wrap">
+          <canvas id="plot" width="1000" height="620" aria-label="两个高斯分布的曲线图"></canvas>
+        </div>
+        <div class="formula">
+          $$D_{KL}(P\Vert Q)=\ln\frac{\sigma_2}{\sigma_1}+\frac{\sigma_1^2+(\mu_1-\mu_2)^2}{2\sigma_2^2}-\frac{1}{2}$$
+        </div>
+      </div>
+
+      <aside class="panel">
+        <div class="stats">
+          <div class="stat p">
+            <span>$D_{KL}(P\Vert Q)$</span>
+            <strong id="klPQ">0.0000</strong>
+          </div>
+          <div class="stat q">
+            <span>$D_{KL}(Q\Vert P)$</span>
+            <strong id="klQP">0.0000</strong>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="group">
+            <h2 class="group-title">
+              分布 P
+              <span class="legend"><span class="sample-line"></span>蓝色实线</span>
+            </h2>
+            <div class="control">
+              <label for="mu1">均值 $\mu_1$ <output id="mu1Out">0.00</output></label>
+              <input id="mu1" type="range" min="-4" max="4" step="0.1" value="0">
+            </div>
+            <div class="control">
+              <label for="sigma1">标准差 $\sigma_1$ <output id="sigma1Out">1.00</output></label>
+              <input id="sigma1" type="range" min="0.2" max="3" step="0.05" value="1">
+            </div>
+          </div>
+
+          <div class="group">
+            <h2 class="group-title">
+              分布 Q
+              <span class="legend"><span class="sample-line red"></span>红色虚线</span>
+            </h2>
+            <div class="control">
+              <label for="mu2">均值 $\mu_2$ <output id="mu2Out">0.00</output></label>
+              <input id="mu2" class="q-range" type="range" min="-4" max="4" step="0.1" value="0">
+            </div>
+            <div class="control">
+              <label for="sigma2">标准差 $\sigma_2$ <output id="sigma2Out">1.00</output></label>
+              <input id="sigma2" class="q-range" type="range" min="0.2" max="3" step="0.05" value="1">
+            </div>
+          </div>
+
+          <div class="group">
+            <h2 class="group-title">预设情况</h2>
+            <div class="presets">
+              <button type="button" data-preset="same">相同分布</button>
+              <button type="button" data-preset="mean">均值偏移</button>
+              <button type="button" data-preset="variance">方差差异</button>
+              <button type="button" data-preset="narrow-wide">小拟合大</button>
+              <button type="button" data-preset="wide-narrow">大拟合小</button>
+            </div>
+          </div>
+
+          <p class="note">
+            图中淡黄色区域强调 $P(x)$ 较大但 $Q(x)$ 较小的位置，这些位置会显著推高 $D_{KL}(P\Vert Q)$。计算使用高斯 KL 的解析公式和自然对数 $\ln$。
+          </p>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('plot');
+    const ctx = canvas.getContext('2d');
+    const inputs = {
+      mu1: document.getElementById('mu1'),
+      sigma1: document.getElementById('sigma1'),
+      mu2: document.getElementById('mu2'),
+      sigma2: document.getElementById('sigma2')
+    };
+    const outputs = {
+      mu1: document.getElementById('mu1Out'),
+      sigma1: document.getElementById('sigma1Out'),
+      mu2: document.getElementById('mu2Out'),
+      sigma2: document.getElementById('sigma2Out'),
+      klPQ: document.getElementById('klPQ'),
+      klQP: document.getElementById('klQP')
+    };
+    const presets = {
+      same: { mu1: 0, mu2: 0, sigma1: 1, sigma2: 1 },
+      mean: { mu1: 0, mu2: 2, sigma1: 1, sigma2: 1 },
+      variance: { mu1: 0, mu2: 0, sigma1: 1, sigma2: 2 },
+      'narrow-wide': { mu1: 0, mu2: 0, sigma1: 0.5, sigma2: 1.5 },
+      'wide-narrow': { mu1: 0, mu2: 0, sigma1: 2, sigma2: 0.5 }
+    };
+
+    function cssVar(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function gaussian(x, mu, sigma) {
+      return Math.exp(-0.5 * ((x - mu) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI));
+    }
+
+    function kl(muA, sigmaA, muB, sigmaB) {
+      return Math.log(sigmaB / sigmaA) + (sigmaA ** 2 + (muA - muB) ** 2) / (2 * sigmaB ** 2) - 0.5;
+    }
+
+    function params() {
+      return {
+        mu1: Number(inputs.mu1.value),
+        sigma1: Number(inputs.sigma1.value),
+        mu2: Number(inputs.mu2.value),
+        sigma2: Number(inputs.sigma2.value)
+      };
+    }
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    }
+
+    function pathFor(fn, mapX, mapY, xMin, xMax, steps) {
+      ctx.beginPath();
+      for (let i = 0; i <= steps; i += 1) {
+        const x = xMin + (xMax - xMin) * i / steps;
+        const y = fn(x);
+        const px = mapX(x);
+        const py = mapY(y);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+    }
+
+    function draw() {
+      resizeCanvas();
+      const { mu1, sigma1, mu2, sigma2 } = params();
+      const rect = canvas.getBoundingClientRect();
+      const width = rect.width;
+      const height = rect.height;
+      const pad = { left: 58, right: 26, top: 30, bottom: 52 };
+      const plotW = width - pad.left - pad.right;
+      const plotH = height - pad.top - pad.bottom;
+      const xMin = -6;
+      const xMax = 6;
+      const maxDensity = Math.max(
+        gaussian(mu1, mu1, sigma1),
+        gaussian(mu2, mu2, sigma2)
+      ) * 1.16;
+      const mapX = x => pad.left + (x - xMin) / (xMax - xMin) * plotW;
+      const mapY = y => pad.top + (1 - y / maxDensity) * plotH;
+      const baseY = mapY(0);
+      const blue = cssVar('--blue');
+      const red = cssVar('--red');
+      const text = cssVar('--text');
+      const muted = cssVar('--muted');
+      const line = cssVar('--line');
+      const blueSoft = cssVar('--blue-soft');
+      const redSoft = cssVar('--red-soft');
+      const amber = cssVar('--amber');
+      const steps = 420;
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.font = '13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = line;
+      ctx.fillStyle = muted;
+
+      for (let i = 0; i <= 6; i += 1) {
+        const y = pad.top + plotH * i / 6;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(width - pad.right, y);
+        ctx.stroke();
+      }
+      for (let x = -6; x <= 6; x += 2) {
+        const px = mapX(x);
+        ctx.beginPath();
+        ctx.moveTo(px, pad.top);
+        ctx.lineTo(px, baseY);
+        ctx.stroke();
+        ctx.fillText(String(x), px - 6, baseY + 22);
+      }
+
+      ctx.strokeStyle = text;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, baseY);
+      ctx.lineTo(width - pad.right, baseY);
+      ctx.moveTo(pad.left, pad.top);
+      ctx.lineTo(pad.left, baseY);
+      ctx.stroke();
+
+      ctx.fillStyle = muted;
+      ctx.fillText('x', width - pad.right - 5, baseY + 38);
+      ctx.save();
+      ctx.translate(18, pad.top + 68);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('概率密度', 0, 0);
+      ctx.restore();
+
+      const pPoints = [];
+      const qPoints = [];
+      for (let i = 0; i <= steps; i += 1) {
+        const x = xMin + (xMax - xMin) * i / steps;
+        pPoints.push({ x, y: gaussian(x, mu1, sigma1) });
+        qPoints.push({ x, y: gaussian(x, mu2, sigma2) });
+      }
+
+      ctx.beginPath();
+      for (let i = 0; i <= steps; i += 1) {
+        const p = pPoints[i];
+        const q = qPoints[i];
+        const top = Math.max(p.y, q.y);
+        const bottom = Math.min(p.y, q.y);
+        const px = mapX(p.x);
+        if (i === 0) ctx.moveTo(px, mapY(top));
+        else ctx.lineTo(px, mapY(top));
+        if (i === steps) {
+          for (let j = steps; j >= 0; j -= 1) {
+            const pp = pPoints[j];
+            const qq = qPoints[j];
+            ctx.lineTo(mapX(pp.x), mapY(Math.min(pp.y, qq.y)));
+          }
+        }
+      }
+      ctx.closePath();
+      ctx.fillStyle = pPoints.some((p, i) => p.y > qPoints[i].y * 1.25) ? amber : blueSoft;
+      ctx.fill();
+
+      ctx.beginPath();
+      for (let i = 0; i <= steps; i += 1) {
+        const p = pPoints[i];
+        const q = qPoints[i];
+        if (p.y > q.y) {
+          const px = mapX(p.x);
+          if (i === 0 || pPoints[i - 1].y <= qPoints[i - 1].y) {
+            ctx.moveTo(px, mapY(q.y));
+          }
+          ctx.lineTo(px, mapY(p.y));
+        }
+      }
+      ctx.strokeStyle = redSoft;
+      ctx.lineWidth = 5;
+      ctx.stroke();
+
+      pathFor(x => gaussian(x, mu1, sigma1), mapX, mapY, xMin, xMax, steps);
+      ctx.strokeStyle = blue;
+      ctx.lineWidth = 3;
+      ctx.setLineDash([]);
+      ctx.stroke();
+
+      pathFor(x => gaussian(x, mu2, sigma2), mapX, mapY, xMin, xMax, steps);
+      ctx.strokeStyle = red;
+      ctx.lineWidth = 3;
+      ctx.setLineDash([9, 7]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = blue;
+      ctx.beginPath();
+      ctx.arc(mapX(mu1), baseY, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillText('μ₁', mapX(mu1) + 6, baseY - 10);
+
+      ctx.fillStyle = red;
+      ctx.beginPath();
+      ctx.arc(mapX(mu2), baseY, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillText('μ₂', mapX(mu2) + 6, baseY - 28);
+
+      const valuePQ = kl(mu1, sigma1, mu2, sigma2);
+      const valueQP = kl(mu2, sigma2, mu1, sigma1);
+      outputs.klPQ.textContent = valuePQ.toFixed(4);
+      outputs.klQP.textContent = valueQP.toFixed(4);
+      outputs.mu1.textContent = mu1.toFixed(2);
+      outputs.sigma1.textContent = sigma1.toFixed(2);
+      outputs.mu2.textContent = mu2.toFixed(2);
+      outputs.sigma2.textContent = sigma2.toFixed(2);
+
+      ctx.fillStyle = text;
+      ctx.font = '600 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      ctx.fillText(`D_KL(P||Q) = ${valuePQ.toFixed(4)}`, pad.left + 12, pad.top + 24);
+      ctx.fillText(`D_KL(Q||P) = ${valueQP.toFixed(4)}`, pad.left + 12, pad.top + 48);
+    }
+
+    Object.values(inputs).forEach(input => input.addEventListener('input', draw));
+
+    document.querySelectorAll('[data-preset]').forEach(button => {
+      button.addEventListener('click', () => {
+        const preset = presets[button.dataset.preset];
+        Object.entries(preset).forEach(([key, value]) => {
+          inputs[key].value = value;
+        });
+        draw();
+      });
+    });
+
+    window.addEventListener('resize', draw);
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
+    draw();
+  </script>
+</body>
+</html>

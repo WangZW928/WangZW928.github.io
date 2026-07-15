@@ -415,6 +415,108 @@ $$L_{\text{simple}}(\theta)
 
 ---
 
+## 6.2. KL 散度：从定义到直观理解
+
+Section 6.1 中的 ELBO 反复出现 KL divergence。它衡量的是：如果真实数据来自分布 $P$，但我们用另一个分布 $Q$ 来编码或近似它，会额外付出多少信息代价。
+
+### 离散形式
+
+对离散随机变量，KL 散度定义为：
+
+$$D_{KL}(P \Vert Q) = \sum_x P(x) \log \frac{P(x)}{Q(x)}$$
+
+这里的期望是在 $P$ 下计算的，所以 $P(x)$ 大的地方更重要。如果某些 $x$ 在真实分布 $P$ 中经常出现，但在近似分布 $Q$ 中概率很低，那么 $\log \frac{P(x)}{Q(x)}$ 会很大，KL 散度就会明显增加。
+
+KL 散度有几个关键性质：
+
+1. 非负：$D_{KL}(P\Vert Q)\ge 0$；
+2. 不对称：通常 $D_{KL}(P\Vert Q)\ne D_{KL}(Q\Vert P)$；
+3. 当且仅当 $P=Q$ 时为 $0$。
+
+例如考虑三分类分布：
+
+$$P=(0.5,0.3,0.2),\qquad Q=(0.4,0.4,0.2)$$
+
+则：
+
+$$
+\begin{aligned}
+D_{KL}(P\Vert Q)
+&=0.5\log\frac{0.5}{0.4}
+ +0.3\log\frac{0.3}{0.4}
+ +0.2\log\frac{0.2}{0.2} \\
+&\approx 0.0204
+\end{aligned}
+$$
+
+反过来：
+
+$$
+\begin{aligned}
+D_{KL}(Q\Vert P)
+&=0.4\log\frac{0.4}{0.5}
+ +0.4\log\frac{0.4}{0.3}
+ +0.2\log\frac{0.2}{0.2} \\
+&\approx 0.0258
+\end{aligned}
+$$
+
+这说明 KL 散度不是普通距离。它关心的是“用 $Q$ 描述来自 $P$ 的样本”时的额外代价，因此交换 $P$ 和 $Q$ 会改变问题本身。
+
+### 连续形式
+
+对连续随机变量，求和变成积分：
+
+$$D_{KL}(P \Vert Q) = \int p(x) \log \frac{p(x)}{q(x)} dx$$
+
+在 DDPM 中最常见的是两个高斯分布之间的 KL。考虑一维情形：
+
+$$P=\mathcal{N}(\mu_1,\sigma_1^2),\qquad Q=\mathcal{N}(\mu_2,\sigma_2^2)$$
+
+两者的对数密度差为：
+
+$$
+\log\frac{p(x)}{q(x)}
+= \log\frac{\sigma_2}{\sigma_1}
++ \frac{(x-\mu_2)^2}{2\sigma_2^2}
+- \frac{(x-\mu_1)^2}{2\sigma_1^2}
+$$
+
+对 $x\sim P$ 取期望。由于：
+
+$$\mathbb{E}_P[(x-\mu_1)^2]=\sigma_1^2$$
+
+以及：
+
+$$
+\mathbb{E}_P[(x-\mu_2)^2]
+=\mathbb{E}_P[(x-\mu_1+\mu_1-\mu_2)^2]
+=\sigma_1^2+(\mu_1-\mu_2)^2
+$$
+
+得到闭式公式：
+
+$$\boxed{
+D_{KL}\big(\mathcal{N}(\mu_1,\sigma_1^2)\Vert \mathcal{N}(\mu_2,\sigma_2^2)\big)
+= \log\frac{\sigma_2}{\sigma_1}
++ \frac{\sigma_1^2 + (\mu_1-\mu_2)^2}{2\sigma_2^2}
+- \frac{1}{2}
+}$$
+
+多维各向同性高斯或对角高斯的情况可以看成对各维度求和。DDPM 的 Section 6.1 中，每个中间项
+
+$$D_{KL}(q(x_{t-1}\vert{}x_t,x_0)\Vert p_\theta(x_{t-1}\vert{}x_t))$$
+
+本质上就是高斯到高斯的 KL。若方差 $\tilde{\beta}_t\mathbf{I}$ 和 $\sigma_t^2\mathbf{I}$ 固定，公式中与 $\theta$ 相关的部分只剩均值差：
+
+$$\left\Vert\tilde{\mu}_t(x_t,x_0)-\mu_\theta(x_t,t)\right\Vert^2$$
+
+这解释了为什么 DDPM 的训练可以转化为让模型预测正确的反向均值；再通过 Section 7 的重参数化，均值匹配又进一步变成了噪声预测 MSE。方差相关项不是消失了，而是在常见设定下不依赖 $\theta$，因此不会影响均值网络的优化方向。
+
+为了更好地理解 KL 散度的几何意义，你可以在[这个在线模拟页面](/kl-simulation.html)中拖动参数，直观感受两个高斯分布之间 KL 散度的变化。
+
+---
+
 ## 7. 反向过程：从后验到采样公式
 
 反向生成希望从 $x_T\sim\mathcal{N}(0,\mathbf{I})$ 出发，逐步采样 $x_{T-1},x_{T-2},\dots,x_0$。真正想要的是：
