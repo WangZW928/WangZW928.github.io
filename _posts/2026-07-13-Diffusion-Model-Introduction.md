@@ -513,7 +513,9 @@ $$\left\Vert\tilde{\mu}_t(x_t,x_0)-\mu_\theta(x_t,t)\right\Vert^2$$
 
 这解释了为什么 DDPM 的训练可以转化为让模型预测正确的反向均值；再通过 Section 7 的重参数化，均值匹配又进一步变成了噪声预测 MSE。方差相关项不是消失了，而是在常见设定下不依赖 $\theta$，因此不会影响均值网络的优化方向。
 
-为了更好地理解 KL 散度的几何意义，你可以在[这个在线模拟页面](/kl-simulation.html)中拖动参数，直观感受两个高斯分布之间 KL 散度的变化。
+为了更好地理解 KL 散度的几何意义，你可以在下面的交互式模拟中拖动参数，直观感受两个高斯分布之间 KL 散度的变化。
+
+<iframe src="/kl-simulation.html" width="100%" height="800" style="border: 1px solid #ddd; border-radius: 8px; margin: 1.5em 0;"></iframe>
 
 ---
 
