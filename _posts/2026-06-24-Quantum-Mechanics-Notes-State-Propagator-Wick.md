@@ -1,5 +1,6 @@
 ---
 layout: article
+key: quantum-mechanics-notes-state-propagator-wick
 title: 单粒子量子力学学习笔记：从量子态、表象到传播子与 Wick 转动
 mathjax: true
 pageview: true

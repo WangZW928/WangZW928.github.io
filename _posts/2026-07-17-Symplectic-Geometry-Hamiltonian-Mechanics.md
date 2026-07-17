@@ -1,5 +1,6 @@
 ---
 layout: article
+key: symplectic-geometry-hamiltonian-mechanics
 title: 微分几何：辛几何与哈密顿力学
 mathjax: true
 pageview: true

@@ -1,5 +1,6 @@
 ---
 layout: article
+key: schwartz-theory-of-distributions
 title: 广义函数论：弱解——解决一个简单的问题
 mathjax: true
 pageview: true

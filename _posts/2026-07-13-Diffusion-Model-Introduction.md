@@ -1,5 +1,6 @@
 ---
 layout: article
+key: diffusion-model-introduction
 title: Diffusion Model：DDPM 正向与反向过程的数学推导
 mathjax: true
 pageview: true

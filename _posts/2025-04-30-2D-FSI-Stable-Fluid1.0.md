@@ -1,5 +1,6 @@
 ---
 layout: article
+key: 2d-fsi-stable-fluid1-0
 title: 2D FSI - Stable Fluid 1.0
 mathjax: true
 pageview: true

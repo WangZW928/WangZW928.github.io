@@ -1,5 +1,6 @@
 ---
 layout: article
+key: my-first-blog
 title: Firt blog about me 
 mathjax: true
 pageview: true

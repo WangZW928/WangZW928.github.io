@@ -1,5 +1,6 @@
 ---
 layout: article
+key: hamiltonian-canonical-transformation
 title: Hamiltonian Canonical Transformations
 mathjax: true
 pageview: true

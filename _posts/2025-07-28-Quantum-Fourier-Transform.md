@@ -1,5 +1,6 @@
 ---
 layout: article
+key: quantum-fourier-transform
 title: Quantum Computing - Quantum Fourier Transform (QFT)
 mathjax: true
 pageview: true
