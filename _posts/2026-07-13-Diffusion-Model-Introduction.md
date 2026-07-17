@@ -523,7 +523,11 @@ $$\left\Vert\tilde{\mu}_t(x_t,x_0)-\mu_\theta(x_t,t)\right\Vert^2$$
 
 ## 7. 反向过程：从后验到采样公式
 
-反向生成希望从 $x_T\sim\mathcal{N}(0,\mathbf{I})$ 出发，逐步采样 $x_{T-1},x_{T-2},\dots,x_0$。真正想要的是：
+反向生成希望从 $x_T\sim\mathcal{N}(0,\mathbf{I})$ 出发，逐步采样 $x_{T-1},x_{T-2},\dots,x_0$。
+
+![反向高斯采样过程示意图](/assets/images/diffusion/reverse-gaussian-sampling.jpg)
+
+真正想要的是：
 
 $$q(x_{t-1}\vert{}x_t)$$
 
