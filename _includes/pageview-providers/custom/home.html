@@ -1,3 +1,30 @@
 <!-- start custom pageview snippet (for Home layout) -->
-
+{%- if site.pageview.goatcounter.code -%}
+<script>
+  (function() {
+    var keyToPath = {
+      {%- for _post in site.posts -%}
+        {%- if _post.key -%}
+      '{{ _post.key }}': '{{ _post.url }}',
+        {%- endif -%}
+      {%- endfor -%}
+    };
+    document.querySelectorAll('.js-pageview').forEach(function(el) {
+      var key = el.getAttribute('data-page-key');
+      var path = keyToPath[key];
+      if (!path) return;
+      fetch('https://{{ site.pageview.goatcounter.code }}.goatcounter.com/counter/' +
+            encodeURIComponent(path) + '.json')
+        .then(function(res) { if (!res.ok) throw new Error(res.status); return res.json(); })
+        .then(function(data) {
+          var count = String(data.count).replace(/[^0-9]/g, '') || '0';
+          el.setAttribute('itemprop', 'userInteractionCount');
+          el.setAttribute('content', count);
+          el.textContent = count;
+        })
+        .catch(function() { /* 无记录或网络失败时保持 0 */ });
+    });
+  })();
+</script>
+{%- endif -%}
 <!-- end custom pageview snippet (for Home layout) -->

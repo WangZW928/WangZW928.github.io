@@ -1,3 +1,18 @@
 <!-- start custom pageview snippet (for the post) -->
-
+{%- if page.key and site.pageview.goatcounter.code -%}
+<script>
+  (function() {
+    fetch('https://{{ site.pageview.goatcounter.code }}.goatcounter.com/counter/' +
+          encodeURIComponent('{{ page.url }}') + '.json')
+      .then(function(res) { if (!res.ok) throw new Error(res.status); return res.json(); })
+      .then(function(data) {
+        var count = String(data.count).replace(/[^0-9]/g, '') || '0';
+        document.querySelectorAll("[data-page-key='{{ page.key }}']").forEach(function(el) {
+          el.textContent = count;
+        });
+      })
+      .catch(function() { /* 无记录或网络失败时保持 0 */ });
+  })();
+</script>
+{%- endif -%}
 <!-- end custom pageview snippet (for the post) -->
