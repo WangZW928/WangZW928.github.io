@@ -15,6 +15,8 @@ DDPM（Denoising Diffusion Probabilistic Models）的核心思想是：先定义
 4. 训练目标为什么通常写成预测噪声；
 5. 反向采样公式如何由贝叶斯后验推导出来。
 
+配套的可运行代码见：[最小代码实例](https://github.com/WangZW928/HPC_matters/tree/main/Machine%20Learning/Diffusion_MNIST)（PyTorch + MNIST，完整实现正向加噪、训练与反向采样）。
+
 ---
 
 ## 0. 图片、随机变量与概率分布
@@ -784,3 +786,5 @@ x_t-\frac{\beta_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon_\theta(x_t,t)
 $$
 
 正向过程负责构造可监督的噪声预测任务；反向过程把噪声预测转化为逐步采样。两者由同一个高斯后验推导连接起来。
+
+本文对应的完整可运行实现：[最小代码实例（Diffusion_MNIST）](https://github.com/WangZW928/HPC_matters/tree/main/Machine%20Learning/Diffusion_MNIST)
