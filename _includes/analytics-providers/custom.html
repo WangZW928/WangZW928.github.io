@@ -1,5 +1,6 @@
 <!-- start custom analytics snippet -->
 <!-- GoatCounter: https://{{ site.pageview.goatcounter.code }}.goatcounter.com -->
+<!-- count.js 自托管于 /assets/js/count.js：官方 CDN gc.zgo.at 在国内无法访问 -->
 <script data-goatcounter="https://{{ site.pageview.goatcounter.code }}.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
+        async src="{{ '/assets/js/count.js' | relative_url }}"></script>
 <!-- end custom analytics snippet -->
