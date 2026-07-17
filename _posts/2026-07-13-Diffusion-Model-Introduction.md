@@ -99,6 +99,8 @@ $$\nabla_{x_t}\log q(x_t)\approx -\frac{1}{\sqrt{1-\bar{\alpha}_t}}\epsilon_\the
 
 正向扩散过程定义为一个固定的马尔可夫链：
 
+![正向高斯加噪过程示意图](/assets/images/diffusion/forward-gaussian-process.jpg)
+
 $$q(x_1,\dots,x_T \vert{} x_0) = \prod_{t=1}^T q(x_t \vert{} x_{t-1})$$
 
 每一步只依赖前一步：
