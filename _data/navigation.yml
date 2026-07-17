@@ -108,6 +108,10 @@ header:
       # @end locale config
     url: /about.html
 
+  - titles:
+      en      : GitHub
+    url: https://github.com/WangZW928
+
 docs-en:
   - title: Getting Started
     children:
